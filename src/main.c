@@ -14,6 +14,25 @@ void close();
 // Loop handler
 void loop_handler();
 
+// Main loop flag
+bool quit = false;
+
+void loop_handler()
+{
+    SDL_Event e;
+
+    // Handle events on queue
+    while (SDL_PollEvent(&e) != 0)
+    {
+        // User requests quit
+        if (e.type == SDL_QUIT)
+        {
+            quit = true;
+        }
+    }
+
+}
+
 int main(int argc, char *args[])
 {
     if (!init())
@@ -34,10 +53,11 @@ int main(int argc, char *args[])
                 loop_handler();
             }
         }
-        
     }
 
-    
+    // Free resources and close SDL
+    close();
+
     return 0;
 }
 
@@ -102,9 +122,11 @@ bool load_media()
     globals.g_font = TTF_OpenFont("./res/retro_font.ttf", 30);
     if (globals.g_font == NULL)
     {
-        SDL_Log(SDL_LOG_PRIORITY_ERROR, "Failed to load lazy font: %s", TTF_GetError());
+        SDL_LogError(SDL_LOG_PRIORITY_ERROR, "Failed to load lazy font: %s", TTF_GetError());
         success = false;
     }
+
+    return success;
 }
 
 void close()
@@ -124,21 +146,3 @@ void close()
     SDL_Quit();
 }
 
-// Main loop flag
-bool quit = false;
-
-void loop_handler()
-{
-    SDL_Event e;
-
-    // Handle events on queue
-    while (SDL_PollEvent(&e) != 0)
-    {
-        // User requests quit
-        if (e.type == SDL_QUIT)
-        {
-            quit = true;
-        }
-    }
-
-}
