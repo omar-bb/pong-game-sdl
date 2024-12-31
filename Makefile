@@ -14,7 +14,7 @@ OBJ = $(SRC:%.c=$(PATH_DEBUG)/%.o)
 DEP = $(SRC:%.c=$(PATH_DEBUG)/%.d)
 
 # Output binary
-OUT = $(PATH_BIN)/my_sdl_app
+OUT = $(PATH_BIN)/pong_game
 
 # Include and library flags
 INCFLAGS = -I$(PATH_INCLUDE) -I$(PATH_INCLUDE)/SDL2
