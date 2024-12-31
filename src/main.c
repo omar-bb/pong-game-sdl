@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "globals.h"
+#include "Paddle.h"
+#include "drawing.h"
 
 // Initialize SDL
 bool init();
@@ -17,6 +19,8 @@ void loop_handler();
 // Main loop flag
 bool quit = false;
 
+Paddle paddle;
+
 void loop_handler()
 {
     SDL_Event e;
@@ -29,15 +33,34 @@ void loop_handler()
         {
             quit = true;
         }
+        
+        // Handle input for the paddle
+        Paddle_handle_event(&paddle, &e);
     }
+
+    // Move the paddle
+    Paddle_move(&paddle);
+
+    // Clear screen
+    // 250, 243, 224
+    SDL_SetRenderDrawColor(globals.g_renderer, 250, 243, 224, 0xFF);
+    SDL_RenderClear(globals.g_renderer);
+
+    // Render paddle
+    SDL_SetRenderDrawColor(globals.g_renderer, 0x00, 0x00, 0x00, 0xFF);
+    Paddle_render(&paddle);
 
     // Draw borders 
     SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_H, .w=SCREEN_WIDTH};
     SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_H, .h=BORDER_H, .w=SCREEN_WIDTH};
     SDL_RenderFillRect(globals.g_renderer, &top_border);
     SDL_RenderFillRect(globals.g_renderer, &bottom_border);
+
     // Draw dotted line
     draw_thick_dotted_Vline(globals.g_renderer, (SCREEN_WIDTH / 2) - 5, 0, SCREEN_HEIGHT, 25, 10, 35);
+
+    // Update screen
+    SDL_RenderPresent(globals.g_renderer);
 }
 
 int main(int argc, char *args[])
@@ -48,6 +71,8 @@ int main(int argc, char *args[])
     }
     else
     {
+        Paddle_init(&paddle, 20, (SCREEN_HEIGHT / 2) - (PADDLE_HEIGHT / 2));
+
         if (!load_media())
         {
             SDL_LogError(SDL_LOG_PRIORITY_ERROR, "Failed to load media: %s", SDL_GetError());
