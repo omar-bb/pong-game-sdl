@@ -31,6 +31,13 @@ void loop_handler()
         }
     }
 
+    // Draw borders 
+    SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_H, .w=SCREEN_WIDTH};
+    SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_H, .h=BORDER_H, .w=SCREEN_WIDTH};
+    SDL_RenderFillRect(globals.g_renderer, &top_border);
+    SDL_RenderFillRect(globals.g_renderer, &bottom_border);
+    // Draw dotted line
+    draw_thick_dotted_Vline(globals.g_renderer, (SCREEN_WIDTH / 2) - 5, 0, SCREEN_HEIGHT, 25, 10, 35);
 }
 
 int main(int argc, char *args[])

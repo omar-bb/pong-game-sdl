@@ -8,6 +8,9 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
+// Borders dimensions
+#define BORDER_H 15
+
 // Globals struct
 typedef struct {
     SDL_Window *g_window;
