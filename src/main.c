@@ -53,6 +53,8 @@ void loop_handler()
     // Draw borders 
     SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_H, .w=SCREEN_WIDTH};
     SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_H, .h=BORDER_H, .w=SCREEN_WIDTH};
+    SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
+    SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_HEIGHT, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
     SDL_RenderFillRect(globals.g_renderer, &top_border);
     SDL_RenderFillRect(globals.g_renderer, &bottom_border);
 

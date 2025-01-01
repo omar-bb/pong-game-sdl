@@ -40,14 +40,14 @@ void Paddle_move(Paddle *paddle)
     paddle->m_paddle.y += paddle->m_vel;
 
     // If the paddle went too far
-    if (paddle->m_paddle.y < BORDER_H)
+    if (paddle->m_paddle.y < BORDER_HEIGHT)
     {
         // Move back
-        paddle->m_paddle.y = BORDER_H;
+        paddle->m_paddle.y = BORDER_HEIGHT;
     }
-    else if (paddle->m_paddle.y + paddle->m_paddle.h > SCREEN_HEIGHT - BORDER_H)
+    else if (paddle->m_paddle.y + paddle->m_paddle.h > SCREEN_HEIGHT - BORDER_HEIGHT)
     {
-        paddle->m_paddle.y = SCREEN_HEIGHT - BORDER_H - paddle->m_paddle.h;
+        paddle->m_paddle.y = SCREEN_HEIGHT - BORDER_HEIGHT - paddle->m_paddle.h;
     }
 }
 

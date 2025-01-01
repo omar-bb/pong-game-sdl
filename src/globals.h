@@ -9,7 +9,7 @@
 #define SCREEN_HEIGHT 480
 
 // Borders dimensions
-#define BORDER_H 15
+#define BORDER_HEIGHT 15
 
 #define PI 3.14159265359f
 #define TAU (2.0f * PI)

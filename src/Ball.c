@@ -75,15 +75,15 @@ void Ball_move(Ball *ball, Paddle *paddle)
     }
 
     // Check collision with the top wall
-    if (ball->m_pos_y < BORDER_H) 
+    if (ball->m_pos_y < BORDER_HEIGHT) 
     {
-        ball->m_pos_y = BORDER_H;
+        ball->m_pos_y = BORDER_HEIGHT;
         ball->m_vel_y *= -1;
     }
     // Check collision with the bottom wall
-    else if (ball->m_pos_y + BALL_HEIGHT > SCREEN_HEIGHT - BORDER_H)
+    else if (ball->m_pos_y + BALL_HEIGHT > SCREEN_HEIGHT - BORDER_HEIGHT)
     {
-        ball->m_pos_y = SCREEN_HEIGHT - BORDER_H - BALL_HEIGHT;
+        ball->m_pos_y = SCREEN_HEIGHT - BORDER_HEIGHT - BALL_HEIGHT;
         ball->m_vel_y *= -1;
     }
 
