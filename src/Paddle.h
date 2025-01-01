@@ -6,7 +6,7 @@
 #define PADDLE_WIDTH 10
 #define PADDLE_HEIGHT 60
 
-#define PADDLE_VEL 16
+#define PADDLE_VEL 5
 
 // Player's paddle
 typedef struct {
