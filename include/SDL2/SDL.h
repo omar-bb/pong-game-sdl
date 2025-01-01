@@ -3,60 +3,80 @@
   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
+  warranty. In no event will the authors be held liable for any damages
   arising from the use of this software.
 
   Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
+  including commercial applications, and to alter it and redistribute
+  it freely, subject to the following restrictions:
 
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
+     in a product, an acknowledgment in the product documentation would
+     be appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
 
 /**
- *  \file SDL.h
+ * \file SDL.h
  *
- *  Main include header for the SDL library
+ * \brief Main include header for the SDL library.
+ *
+ * This header includes all of the available SDL subsystem headers.
+ * 
+ * If you only need a subset of SDL, consider including the relevant headers
+ * directly to potentially decrease compile times or avoid unneeded
+ * dependencies.
  */
-
 
 #ifndef SDL_h_
 #define SDL_h_
 
+/* Core headers for SDL: main, standard includes, and asserts. */
 #include "SDL_main.h"
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
+
+/* Atomic operations and concurrency. */
 #include "SDL_atomic.h"
 #include "SDL_audio.h"
+
+/* Clipboard, CPU info, endianness, and error handling. */
 #include "SDL_clipboard.h"
 #include "SDL_cpuinfo.h"
 #include "SDL_endian.h"
 #include "SDL_error.h"
+
+/* Event handling and filesystem utilities. */
 #include "SDL_events.h"
 #include "SDL_filesystem.h"
+
+/* Game controllers, GUID, haptics, HID, hints, joysticks. */
 #include "SDL_gamecontroller.h"
 #include "SDL_guid.h"
 #include "SDL_haptic.h"
 #include "SDL_hidapi.h"
 #include "SDL_hints.h"
 #include "SDL_joystick.h"
+
+/* Shared object loading, logging, message box, Metal, mutex. */
 #include "SDL_loadso.h"
 #include "SDL_log.h"
 #include "SDL_messagebox.h"
 #include "SDL_metal.h"
 #include "SDL_mutex.h"
+
+/* Power status, 2D rendering, RWops, sensor, shape, system. */
 #include "SDL_power.h"
 #include "SDL_render.h"
 #include "SDL_rwops.h"
 #include "SDL_sensor.h"
 #include "SDL_shape.h"
 #include "SDL_system.h"
+
+/* Threading, timing, versioning, video, locale, etc. */
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_version.h"
@@ -65,117 +85,92 @@
 #include "SDL_misc.h"
 
 #include "begin_code.h"
-/* Set up for C function definitions, even when using C++ */
+/* Set up for C function definitions, even when using C++. */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* As of version 0.5, SDL is loaded dynamically into the application */
-
 /**
- *  \name SDL_INIT_*
+ * \name Subsystem Initialization Flags
  *
- *  These are the flags which may be passed to SDL_Init().  You should
- *  specify the subsystems which you will be using in your application.
+ * These flags are used with SDL_Init and related functions to selectively
+ * initialize or query SDL subsystems. Combine them using bitwise OR.
  */
-/* @{ */
-#define SDL_INIT_TIMER          0x00000001u
-#define SDL_INIT_AUDIO          0x00000010u
-#define SDL_INIT_VIDEO          0x00000020u  /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
-#define SDL_INIT_JOYSTICK       0x00000200u  /**< SDL_INIT_JOYSTICK implies SDL_INIT_EVENTS */
-#define SDL_INIT_HAPTIC         0x00001000u
-#define SDL_INIT_GAMECONTROLLER 0x00002000u  /**< SDL_INIT_GAMECONTROLLER implies SDL_INIT_JOYSTICK */
-#define SDL_INIT_EVENTS         0x00004000u
-#define SDL_INIT_SENSOR         0x00008000u
-#define SDL_INIT_NOPARACHUTE    0x00100000u  /**< compatibility; this flag is ignored. */
+/*@{*/
+#define SDL_INIT_TIMER          0x00000001u    /**< Timer subsystem */
+#define SDL_INIT_AUDIO          0x00000010u    /**< Audio subsystem */
+#define SDL_INIT_VIDEO          0x00000020u    /**< Video subsystem (implies SDL_INIT_EVENTS) */
+#define SDL_INIT_JOYSTICK       0x00000200u    /**< Joystick subsystem (implies SDL_INIT_EVENTS) */
+#define SDL_INIT_HAPTIC         0x00001000u    /**< Haptic (force feedback) subsystem */
+#define SDL_INIT_GAMECONTROLLER 0x00002000u    /**< Controller subsystem (implies SDL_INIT_JOYSTICK) */
+#define SDL_INIT_EVENTS         0x00004000u    /**< Events subsystem */
+#define SDL_INIT_SENSOR         0x00008000u    /**< Sensor subsystem */
+#define SDL_INIT_NOPARACHUTE    0x00100000u    /**< Deprecated: ignored compatibility flag */
+
 #define SDL_INIT_EVERYTHING ( \
-                SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
-                SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_SENSOR \
-            )
-/* @} */
+    SDL_INIT_TIMER          | \
+    SDL_INIT_AUDIO          | \
+    SDL_INIT_VIDEO          | \
+    SDL_INIT_EVENTS         | \
+    SDL_INIT_JOYSTICK       | \
+    SDL_INIT_HAPTIC         | \
+    SDL_INIT_GAMECONTROLLER | \
+    SDL_INIT_SENSOR         \
+)
+/*@}*/
 
 /**
- * Initialize the SDL library.
+ * \brief Initialize the SDL library.
  *
- * SDL_Init() simply forwards to calling SDL_InitSubSystem(). Therefore, the
- * two may be used interchangeably. Though for readability of your code
- * SDL_InitSubSystem() might be preferred.
+ * \details
+ * Calling SDL_Init() starts up the various subsystems specified by \p flags.
+ * 
+ * Example usage:
+ * \code
+ *   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+ *       fprintf(stderr, "Could not initialize SDL: %s\n", SDL_GetError());
+ *       exit(1);
+ *   }
+ * \endcode
  *
- * The file I/O (for example: SDL_RWFromFile) and threading (SDL_CreateThread)
- * subsystems are initialized by default. Message boxes
- * (SDL_ShowSimpleMessageBox) also attempt to work without initializing the
- * video subsystem, in hopes of being useful in showing an error dialog when
- * SDL_Init fails. You must specifically initialize other subsystems if you
- * use them in your application.
+ * \param flags A mask of SDL_INIT_ flags OR'd together.
  *
- * Logging (such as SDL_Log) works without initialization, too.
- *
- * `flags` may be any of the following OR'd together:
- *
- * - `SDL_INIT_TIMER`: timer subsystem
- * - `SDL_INIT_AUDIO`: audio subsystem
- * - `SDL_INIT_VIDEO`: video subsystem; automatically initializes the events
- *   subsystem
- * - `SDL_INIT_JOYSTICK`: joystick subsystem; automatically initializes the
- *   events subsystem
- * - `SDL_INIT_HAPTIC`: haptic (force feedback) subsystem
- * - `SDL_INIT_GAMECONTROLLER`: controller subsystem; automatically
- *   initializes the joystick subsystem
- * - `SDL_INIT_EVENTS`: events subsystem
- * - `SDL_INIT_EVERYTHING`: all of the above subsystems
- * - `SDL_INIT_NOPARACHUTE`: compatibility; this flag is ignored
- *
- * Subsystem initialization is ref-counted, you must call SDL_QuitSubSystem()
- * for each SDL_InitSubSystem() to correctly shutdown a subsystem manually (or
- * call SDL_Quit() to force shutdown). If a subsystem is already loaded then
- * this call will increase the ref-count and return.
- *
- * \param flags subsystem initialization flags
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
- *
- * \since This function is available since SDL 2.0.0.
+ * \return 0 on success, or a negative error code on failure. Call SDL_GetError() for more info.
  *
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
- * \sa SDL_SetMainReady
+ * \sa SDL_QuitSubSystem
  * \sa SDL_WasInit
  */
 extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
 
 /**
- * Compatibility function to initialize the SDL library.
+ * \brief Subsystem-specific initialization, similar to SDL_Init().
  *
- * In SDL2, this function and SDL_Init() are interchangeable.
+ * \details
+ * This function allows for more precise control of which subsystems to start.
+ * Typically, SDL_Init() is used instead, but SDL_InitSubSystem() can be
+ * called multiple times with separate flags to individually activate
+ * specific subsystems.
  *
- * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
- * \returns 0 on success or a negative error code on failure; call
- *          SDL_GetError() for more information.
+ * \param flags A mask of SDL_INIT_ flags OR'd together.
  *
- * \since This function is available since SDL 2.0.0.
+ * \return 0 on success, or a negative error code on failure.
  *
  * \sa SDL_Init
- * \sa SDL_Quit
  * \sa SDL_QuitSubSystem
  */
 extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
 
 /**
- * Shut down specific SDL subsystems.
+ * \brief Shut down specific SDL subsystems.
  *
- * If you start a subsystem using a call to that subsystem's init function
- * (for example SDL_VideoInit()) instead of SDL_Init() or SDL_InitSubSystem(),
- * SDL_QuitSubSystem() and SDL_WasInit() will not work. You will need to use
- * that subsystem's quit function (SDL_VideoQuit()) directly instead. But
- * generally, you should not be using those functions directly anyhow; use
- * SDL_Init() instead.
+ * \details
+ * This allows for individually stopping certain subsystems (specified by
+ * \p flags). The reference count for each subsystem is reduced, and a
+ * subsystem will be actually shut down only when the ref count reaches zero.
  *
- * You still need to call SDL_Quit() even if you close all open subsystems
- * with SDL_QuitSubSystem().
- *
- * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
- *
- * \since This function is available since SDL 2.0.0.
+ * \param flags A mask of SDL_INIT_ flags identifying which subsystems to stop.
  *
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
@@ -183,15 +178,16 @@ extern DECLSPEC int SDLCALL SDL_InitSubSystem(Uint32 flags);
 extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
 
 /**
- * Get a mask of the specified subsystems which are currently initialized.
+ * \brief Get the current initialization status.
  *
- * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
- * \returns a mask of all initialized subsystems if `flags` is 0, otherwise it
- *          returns the initialization status of the specified subsystems.
+ * \details
+ * You can pass 0 to query all subsystems, or pass a set of flags to see which
+ * are currently active.
  *
- *          The return value does not include SDL_INIT_NOPARACHUTE.
+ * \param flags A bitmask of SDL_INIT_ flags.
  *
- * \since This function is available since SDL 2.0.0.
+ * \return A mask of the active subsystems if \p flags is 0; otherwise, the mask
+ *         of subsystems from \p flags that are currently initialized.
  *
  * \sa SDL_Init
  * \sa SDL_InitSubSystem
@@ -199,33 +195,29 @@ extern DECLSPEC void SDLCALL SDL_QuitSubSystem(Uint32 flags);
 extern DECLSPEC Uint32 SDLCALL SDL_WasInit(Uint32 flags);
 
 /**
- * Clean up all initialized subsystems.
+ * \brief Shut down all initialized SDL subsystems.
  *
- * You should call this function even if you have already shutdown each
- * initialized subsystem with SDL_QuitSubSystem(). It is safe to call this
- * function even in the case of errors in initialization.
+ * \details
+ * Calling SDL_Quit() will properly close all subsystems that have been
+ * previously started. Even if SDL_QuitSubSystem() has been called for some
+ * parts, it is recommended to call SDL_Quit() to ensure all resources are
+ * fully released.
  *
- * If you start a subsystem using a call to that subsystem's init function
- * (for example SDL_VideoInit()) instead of SDL_Init() or SDL_InitSubSystem(),
- * then you must use that subsystem's quit function (SDL_VideoQuit()) to shut
- * it down before calling SDL_Quit(). But generally, you should not be using
- * those functions directly anyhow; use SDL_Init() instead.
- *
- * You can use this function with atexit() to ensure that it is run when your
- * application is shutdown, but it is not wise to do this from a library or
- * other dynamically loaded code.
- *
- * \since This function is available since SDL 2.0.0.
+ * Example usage:
+ * \code
+ *   SDL_Quit();
+ * \endcode
  *
  * \sa SDL_Init
  * \sa SDL_QuitSubSystem
  */
 extern DECLSPEC void SDLCALL SDL_Quit(void);
 
-/* Ends C function definitions when using C++ */
+/* Close out the C function definitions if compiled as C++. */
 #ifdef __cplusplus
 }
 #endif
+
 #include "close_code.h"
 
 #endif /* SDL_h_ */
