@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include "globals.h"
 #include "Paddle.h"
+#include "Ball.h"
+#include "Texture.h"
 #include "drawing.h"
 
 // Initialize SDL
@@ -19,7 +21,17 @@ void loop_handler();
 // Main loop flag
 bool quit = false;
 
+// Set text color as black
+SDL_Color text_color = {0, 0, 0, 255};
+
+// The player's paddle
 Paddle paddle;
+
+// Pong ball
+Ball ball;
+
+// Score texture
+Texture text_score_texture;
 
 void loop_handler()
 {
@@ -41,6 +53,9 @@ void loop_handler()
     // Move the paddle
     Paddle_move(&paddle);
 
+    // Move the ball
+    Ball_move(&ball, &paddle);
+
     // Clear screen
     // 250, 243, 224
     SDL_SetRenderDrawColor(globals.g_renderer, 250, 243, 224, 0xFF);
@@ -49,10 +64,10 @@ void loop_handler()
     // Render paddle
     SDL_SetRenderDrawColor(globals.g_renderer, 0x00, 0x00, 0x00, 0xFF);
     Paddle_render(&paddle);
+    Ball_render(&ball);
 
+    // TODO: Render these before
     // Draw borders 
-    SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_H, .w=SCREEN_WIDTH};
-    SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_H, .h=BORDER_H, .w=SCREEN_WIDTH};
     SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
     SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_HEIGHT, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
     SDL_RenderFillRect(globals.g_renderer, &top_border);
@@ -60,6 +75,10 @@ void loop_handler()
 
     // Draw dotted line
     draw_thick_dotted_Vline(globals.g_renderer, (SCREEN_WIDTH / 2) - 5, 0, SCREEN_HEIGHT, 25, 10, 35);
+
+    // Render score
+    Texture_load_from_rendered_text(&text_score_texture, globals.g_font, "10", text_color);
+    Texture_render(&text_score_texture, (SCREEN_WIDTH / 2) - text_score_texture.m_width - 10, BORDER_HEIGHT - 5, NULL);
 
     // Update screen
     SDL_RenderPresent(globals.g_renderer);
@@ -74,6 +93,7 @@ int main(int argc, char *args[])
     else
     {
         Paddle_init(&paddle, 20, (SCREEN_HEIGHT / 2) - (PADDLE_HEIGHT / 2));
+        Ball_init(&ball, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
         if (!load_media())
         {
@@ -153,7 +173,7 @@ bool load_media()
     bool success = true;
 
     // Open the font
-    globals.g_font = TTF_OpenFont("./res/retro_font.ttf", 30);
+    globals.g_font = TTF_OpenFont("./res/retro_font.ttf", 40);
     if (globals.g_font == NULL)
     {
         SDL_LogError(SDL_LOG_PRIORITY_ERROR, "Failed to load lazy font: %s", TTF_GetError());
@@ -165,6 +185,9 @@ bool load_media()
 
 void close()
 {
+    // Free texture
+    Texture_free(&text_score_texture);
+
     // Free global
     TTF_CloseFont(globals.g_font);
     globals.g_font = NULL;
