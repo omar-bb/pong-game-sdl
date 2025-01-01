@@ -13,7 +13,7 @@
 #define VELOCITY_INCREMENT 0.5
 #define MAX_BALL_SPEED 12
 
-#define MAX_BOUNCE_ANGLE 30.0f
+#define MAX_BOUNCE_ANGLE 45.0f
 
 typedef struct {
     SDL_Rect m_ball;
