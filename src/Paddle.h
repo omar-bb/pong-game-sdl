@@ -19,7 +19,7 @@ void Paddle_init(Paddle *paddle, int x, int y);
 // Move paddle
 void Paddle_move(Paddle *paddle);
 // Handle event
-void Paddle_handle_event(Paddle *paddle, SDL_Event *e);
+void Paddle_handle_event(Paddle *paddle, SDL_Event *e, SDL_KeyCode KEYMDOWN, SDL_KeyCode KEYMUP);
 // Render
 void Paddle_render(Paddle *paddle);
 

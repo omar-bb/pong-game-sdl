@@ -10,27 +10,25 @@ void Paddle_init(Paddle *paddle, int x, int y)
     paddle->m_paddle.w = PADDLE_WIDTH;
 }
 
-void Paddle_handle_event(Paddle *paddle, SDL_Event *e)
+void Paddle_handle_event(Paddle *paddle, SDL_Event *e, SDL_KeyCode KEYMDOWN, SDL_KeyCode KEYMUP)
 {
     // If a key was pressed
     if (e->type == SDL_KEYDOWN && e->key.repeat == 0)
     {
         // Adjust the velocity
-        switch (e->key.keysym.sym)
-        {
-            case SDLK_UP: paddle->m_vel -= PADDLE_VEL; break;
-            case SDLK_DOWN: paddle->m_vel += PADDLE_VEL; break;
-        }
+        if (e->key.keysym.sym == KEYMUP)
+            paddle->m_vel -= PADDLE_VEL;
+        else if (e->key.keysym.sym == KEYMDOWN)
+            paddle->m_vel += PADDLE_VEL;
     }
     // If a key was released
     else if (e->type == SDL_KEYUP && e->key.repeat == 0)
     {
         // Adjust the velocity
-        switch (e->key.keysym.sym)
-        {
-            case SDLK_UP: paddle->m_vel += PADDLE_VEL; break;
-            case SDLK_DOWN: paddle->m_vel -= PADDLE_VEL; break;
-        }
+        if (e->key.keysym.sym == KEYMUP)
+            paddle->m_vel += PADDLE_VEL;
+        else if (e->key.keysym.sym == KEYMDOWN)
+            paddle->m_vel -= PADDLE_VEL;
     }
 }
 
