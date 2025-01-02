@@ -9,6 +9,8 @@
 #include "Texture.h"
 #include "drawing.h"
 
+const int BUFFER = 2 + 1;
+
 // Initialize SDL
 bool init();
 // Loads media
@@ -25,13 +27,24 @@ bool quit = false;
 SDL_Color text_color = {0, 0, 0, 255};
 
 // The player's paddle
-Paddle paddle;
+Paddle paddle1;
+Paddle paddle2;
 
 // Pong ball
 Ball ball;
 
 // Score texture
-Texture text_score_texture;
+Texture text_player1_score_texture;
+Texture text_player2_score_texture;
+
+int score1 = 0;
+int score2 = 0;
+char text_score1[BUFFER];
+char text_score2[BUFFER];
+
+#define RESPAWN_DELAY 1000 
+
+Uint32 ball_respawn_time = 0;
 
 void loop_handler()
 {
@@ -45,42 +58,73 @@ void loop_handler()
         {
             quit = true;
         }
-        
-        // Handle input for the paddle
-        Paddle_handle_event(&paddle, &e);
+
+        // Handle input for the paddles
+        Paddle_handle_event(&paddle1, &e, SDLK_DOWN, SDLK_UP);
+        Paddle_handle_event(&paddle2, &e, SDLK_s, SDLK_z);
     }
 
-    // Move the paddle
-    Paddle_move(&paddle);
+    // Move the paddles
+    Paddle_move(&paddle1);
+    Paddle_move(&paddle2);
 
-    // Move the ball
-    Ball_move(&ball, &paddle);
+    // Move the ball and determine scorer
 
-    // Clear screen
-    // 250, 243, 224
+    if (!ball.m_respawn_state)
+    {
+        int scorer = Ball_move(&ball, &paddle1, &paddle2);
+        switch (scorer)
+        {
+            case 0: // Ball still in play
+                break;
+            case 1: // Player 1 scored
+                score1++;
+                ball.m_respawn_state = true;
+                ball_respawn_time = SDL_GetTicks() + RESPAWN_DELAY;
+                break;
+            case 2: // Player 2 scored
+                score2++;
+                ball.m_respawn_state = true;
+                ball_respawn_time = SDL_GetTicks() + RESPAWN_DELAY;
+                break;
+        }
+    }
+    else if (SDL_GetTicks() > ball_respawn_time)
+    {
+        Ball_spawn(&ball, (score1 > score2));
+        ball.m_respawn_state = false;
+    }
+
+    // Clear screen with background color
     SDL_SetRenderDrawColor(globals.g_renderer, 250, 243, 224, 0xFF);
     SDL_RenderClear(globals.g_renderer);
 
-    // Render paddle
+    // Render paddles
     SDL_SetRenderDrawColor(globals.g_renderer, 0x00, 0x00, 0x00, 0xFF);
-    Paddle_render(&paddle);
-    Ball_render(&ball);
+    Paddle_render(&paddle1);
+    Paddle_render(&paddle2);
 
-    // TODO: Render these before
-    // Draw borders 
-    SDL_Rect top_border = {.x=0, .y=0, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
-    SDL_Rect bottom_border = {.x=0, .y=SCREEN_HEIGHT-BORDER_HEIGHT, .h=BORDER_HEIGHT, .w=SCREEN_WIDTH};
+    // Render the ball
+    if (!ball.m_respawn_state) Ball_render(&ball);
+
+    // Render the borders
+    SDL_Rect top_border = {.x = 0, .y = 0, .h = BORDER_HEIGHT, .w = SCREEN_WIDTH};
+    SDL_Rect bottom_border = {.x = 0, .y = SCREEN_HEIGHT - BORDER_HEIGHT, .h = BORDER_HEIGHT, .w = SCREEN_WIDTH};
     SDL_RenderFillRect(globals.g_renderer, &top_border);
     SDL_RenderFillRect(globals.g_renderer, &bottom_border);
 
-    // Draw dotted line
+    // Render the dotted vertical line
     draw_thick_dotted_Vline(globals.g_renderer, (SCREEN_WIDTH / 2) - 5, 0, SCREEN_HEIGHT, 25, 10, 35);
 
-    // Render score
-    Texture_load_from_rendered_text(&text_score_texture, globals.g_font, "10", text_color);
-    Texture_render(&text_score_texture, (SCREEN_WIDTH / 2) - text_score_texture.m_width - 10, BORDER_HEIGHT - 5, NULL);
+    // Render the scores
+    snprintf(text_score1, sizeof(text_score1), "%d", score1);
+    snprintf(text_score2, sizeof(text_score2), "%d", score2);
+    Texture_load_from_rendered_text(&text_player1_score_texture, globals.g_font, text_score1, text_color);
+    Texture_render(&text_player1_score_texture, (SCREEN_WIDTH / 2) - text_player1_score_texture.m_width - 10, BORDER_HEIGHT - 5, NULL);
+    Texture_load_from_rendered_text(&text_player2_score_texture, globals.g_font, text_score2, text_color);
+    Texture_render(&text_player2_score_texture, (SCREEN_WIDTH / 2) + 8, BORDER_HEIGHT - 5, NULL);
 
-    // Update screen
+    // Update the screen
     SDL_RenderPresent(globals.g_renderer);
 }
 
@@ -92,8 +136,10 @@ int main(int argc, char *args[])
     }
     else
     {
-        Paddle_init(&paddle, 20, (SCREEN_HEIGHT / 2) - (PADDLE_HEIGHT / 2));
-        Ball_init(&ball, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+        // Initialize the two player paddles and the ball
+        Paddle_init(&paddle1, 20, (SCREEN_HEIGHT - PADDLE_HEIGHT) / 2);
+        Paddle_init(&paddle2, SCREEN_WIDTH - PADDLE_WIDTH - 20, (SCREEN_HEIGHT - PADDLE_HEIGHT) / 2);
+        Ball_init(&ball);
 
         if (!load_media())
         {
@@ -186,7 +232,8 @@ bool load_media()
 void close()
 {
     // Free texture
-    Texture_free(&text_score_texture);
+    Texture_free(&text_player1_score_texture);
+    Texture_free(&text_player2_score_texture);
 
     // Free global
     TTF_CloseFont(globals.g_font);
