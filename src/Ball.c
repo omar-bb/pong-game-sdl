@@ -11,7 +11,7 @@ void Ball_init(Ball *ball)
 {
     ball->m_respawn_state = false;
 
-    // Initialize the ball's dimensions
+    // Initialize the ball dimensions
     ball->m_ball.h = BALL_HEIGHT;
     ball->m_ball.w = BALL_WIDTH;
 
@@ -53,14 +53,14 @@ int Ball_move(Ball *ball, Paddle *paddle1, Paddle *paddle2)
         Ball_handle_paddle_collision(ball, paddle2, true);
 
     // Check collision with the left wall
-    if (ball->m_pos_x < 0) 
+    if (ball->m_pos_x < 0/*&& !ball->m_respawn_state*/) 
     {
         ball->m_ball.x = (int)ball->m_pos_x;
         ball->m_ball.y = (int)ball->m_pos_y;
         return 2;
     }
     // Check collision with the right wall
-    else if (ball->m_pos_x + BALL_WIDTH > SCREEN_WIDTH)
+    else if (ball->m_pos_x + BALL_WIDTH > SCREEN_WIDTH/* && !ball->m_respawn_state*/)
     {
         ball->m_ball.x = (int)ball->m_pos_x;
         ball->m_ball.y = (int)ball->m_pos_y;

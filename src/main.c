@@ -70,9 +70,9 @@ void loop_handler()
 
     // Move the ball and determine scorer
 
+    int scorer = Ball_move(&ball, &paddle1, &paddle2);
     if (!ball.m_respawn_state)
     {
-        int scorer = Ball_move(&ball, &paddle1, &paddle2);
         switch (scorer)
         {
             case 0: // Ball still in play
@@ -105,7 +105,7 @@ void loop_handler()
     Paddle_render(&paddle2);
 
     // Render the ball
-    if (!ball.m_respawn_state) Ball_render(&ball);
+    Ball_render(&ball);
 
     // Render the borders
     SDL_Rect top_border = {.x = 0, .y = 0, .h = BORDER_HEIGHT, .w = SCREEN_WIDTH};
