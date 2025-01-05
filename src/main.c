@@ -68,21 +68,26 @@ void loop_handler()
     Paddle_move(&paddle1);
     Paddle_move(&paddle2);
 
-    // Move the ball and determine scorer
+    // Clear screen with background color
+    SDL_SetRenderDrawColor(globals.g_renderer, 250, 243, 224, 0xFF);
+    SDL_RenderClear(globals.g_renderer);
 
-    int scorer = Ball_move(&ball, &paddle1, &paddle2);
+    // Move the ball and determine scorer
     if (!ball.m_respawn_state)
     {
+        int scorer = Ball_move(&ball, &paddle1, &paddle2);
         switch (scorer)
         {
             case 0: // Ball still in play
                 break;
             case 1: // Player 1 scored
+                Ball_init_particles(&ball);
                 score1++;
                 ball.m_respawn_state = true;
                 ball_respawn_time = SDL_GetTicks() + RESPAWN_DELAY;
                 break;
             case 2: // Player 2 scored
+                Ball_init_particles(&ball);
                 score2++;
                 ball.m_respawn_state = true;
                 ball_respawn_time = SDL_GetTicks() + RESPAWN_DELAY;
@@ -91,13 +96,14 @@ void loop_handler()
     }
     else if (SDL_GetTicks() > ball_respawn_time)
     {
+        Ball_free(&ball);
         Ball_spawn(&ball, (score1 > score2));
         ball.m_respawn_state = false;
     }
-
-    // Clear screen with background color
-    SDL_SetRenderDrawColor(globals.g_renderer, 250, 243, 224, 0xFF);
-    SDL_RenderClear(globals.g_renderer);
+    else if (ball.m_respawn_state)
+    {
+        Ball_render_particles(&ball, (score1 < score2));
+    }
 
     // Render paddles
     SDL_SetRenderDrawColor(globals.g_renderer, 0x00, 0x00, 0x00, 0xFF);
@@ -105,7 +111,7 @@ void loop_handler()
     Paddle_render(&paddle2);
 
     // Render the ball
-    Ball_render(&ball);
+    if (!ball.m_respawn_state) Ball_render(&ball);
 
     // Render the borders
     SDL_Rect top_border = {.x = 0, .y = 0, .h = BORDER_HEIGHT, .w = SCREEN_WIDTH};
