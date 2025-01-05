@@ -53,14 +53,14 @@ int Ball_move(Ball *ball, Paddle *paddle1, Paddle *paddle2)
         Ball_handle_paddle_collision(ball, paddle2, true);
 
     // Check collision with the left wall
-    if (ball->m_pos_x < 0/*&& !ball->m_respawn_state*/) 
+    if (ball->m_pos_x < 0) 
     {
         ball->m_ball.x = (int)ball->m_pos_x;
         ball->m_ball.y = (int)ball->m_pos_y;
         return 2;
     }
     // Check collision with the right wall
-    else if (ball->m_pos_x + BALL_WIDTH > SCREEN_WIDTH/* && !ball->m_respawn_state*/)
+    else if (ball->m_pos_x + BALL_WIDTH > SCREEN_WIDTH)
     {
         ball->m_ball.x = (int)ball->m_pos_x;
         ball->m_ball.y = (int)ball->m_pos_y;
@@ -111,13 +111,49 @@ void Ball_handle_paddle_collision(Ball *ball, Paddle *paddle, bool reverse)
     ball->m_vel_x = reverse ? -new_vel_x : new_vel_x;
     ball->m_vel_y = reverse ? -new_vel_y : new_vel_y;
 
-    SDL_Log("Collision Detected");
+/*     SDL_Log("Collision Detected");
     SDL_Log("Normalized Distance: %.2f, Bounce Angle: %.2f", norm_d, bounce_ang);
-    SDL_Log("New Velocities -> X: %.2f, Y: %.2f", ball->m_vel_x, ball->m_vel_y); 
+    SDL_Log("New Velocities -> X: %.2f, Y: %.2f", ball->m_vel_x, ball->m_vel_y);  */
 }
 
 // Render the ball
 void Ball_render(Ball *ball)
 {
     SDL_RenderFillRect(globals.g_renderer, &ball->m_ball);
+}
+
+void Ball_init_particles(Ball *ball)
+{
+    for (int i = 0; i < TOTAL_PARTICLES; i++)
+    {
+        ball->particles[i] = (Particle *)malloc(sizeof(Particle));
+        Particle_init(ball->particles[i], ball->m_ball.x, ball->m_ball.y);
+        SDL_Log("Particle created: VX: %.2f, VY: %.2f", ball->particles[i]->vx, ball->particles[i]->vy);
+    }
+}
+
+void Ball_render_particles(Ball *ball, bool reverse)
+{
+    for (int i = 0; i < TOTAL_PARTICLES; i++) 
+    {
+        if (ball->particles[i] != NULL && ball->particles[i]->lifetime > 0) 
+        {
+            Particle_move(ball->particles[i], reverse);
+
+            int alpha = (int)(255 * (ball->particles[i]->lifetime / 2.0f));
+            SDL_Log("alpha: %d, lifetime: %.2f", alpha, ball->particles[i]->lifetime);
+            SDL_SetRenderDrawColor(globals.g_renderer, 0, 0, 0, alpha);
+            // Render particle
+            Particle_render(ball->particles[i]);
+        }
+    }
+}
+
+
+void Ball_free(Ball *ball)
+{
+    for (int i = 0; i < TOTAL_PARTICLES; ++i)
+    {
+        free(ball->particles[i]);
+    }
 }

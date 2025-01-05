@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "Paddle.h"
 #include <stdbool.h>
+#include "Particle.h"
 
 // Ball's dimensions macros
 #define BALL_HEIGHT 10
@@ -21,6 +22,7 @@ typedef struct {
     float m_pos_x, m_pos_y;
     float m_vel_x, m_vel_y;
     bool m_respawn_state;
+    Particle *particles[TOTAL_PARTICLES];
 } Ball;
 
 // Initialize the ball (velocity and position)
@@ -33,5 +35,14 @@ int Ball_move(Ball *ball, Paddle *paddle1, Paddle *paddle2);
 void Ball_handle_paddle_collision(Ball *ball, Paddle *paddle, bool reverse);
 // Render ball
 void Ball_render(Ball *ball);
+
+// -- Particles
+
+// Initialize particles
+void Ball_init_particles(Ball *ball);
+// Render particles from the ball
+void Ball_render_particles(Ball *ball, bool reverse);
+// Free particles
+void Ball_free(Ball *ball);
 
 #endif
